@@ -11,9 +11,9 @@ const (
 type Font byte
 
 const (
-	A Align = 0x0
-	B Align = 0x1
-	C Align = 0x10
+	A Font = 0x0
+	B Font = 0x1
+	C Font = 0x10
 )
 
 type CodePage byte
