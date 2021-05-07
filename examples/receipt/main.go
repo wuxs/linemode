@@ -2,13 +2,22 @@ package main
 
 import (
 	"fmt"
+	"github.com/jacobsa/go-serial/serial"
 	"github.com/wuxs/linemode/pkg/linemode"
-	"net"
 	"time"
 )
 
 func main() {
-	s, _ := net.Dial("tcp", "192.168.1.2:9100")
+	//s, _ := net.Dial("tcp", "192.168.1.2:9100")
+
+	options := serial.OpenOptions{
+		PortName:        "/dev/ttyS1",
+		BaudRate:        9600,
+		DataBits:        8,
+		StopBits:        1,
+		MinimumReadSize: 4,
+	}
+	s, err := serial.Open(options)
 	//s, _ := os.Create("test.txt")  // write to file
 	defer s.Close()
 	star := linemode.NewStar(s)
@@ -31,7 +40,7 @@ func main() {
 		Print(fmt.Sprintf("    日期: " + time.Now().Format("2006-01-01 15:04") + "\n")).
 		FeedPaperLines(5).
 		CutFull()
-	_, err := star.Flush()
+	_, err = star.Flush()
 	if err != nil {
 		fmt.Println(err.Error())
 	}

@@ -40,6 +40,16 @@ func (s *Star) CancelBold() *Star {
 	return s
 }
 
+func (s *Star) SpecifyEmphasized() *Star {
+	s.buffer.Write([]byte{0x1B, 0x45})
+	return s
+}
+
+func (s *Star) CancelEmphasized() *Star {
+	s.buffer.Write([]byte{0x1B, 0x46})
+	return s
+}
+
 func (s *Star) SpecifyHigLight() *Star {
 	s.buffer.Write([]byte{0x1B, 0x34})
 	return s
@@ -141,16 +151,6 @@ func (s *Star) SpecifySlashZero() *Star {
 
 func (s *Star) CancelSlashZero() *Star {
 	s.buffer.Write([]byte{0x1B, 0x2F, 0x0})
-	return s
-}
-
-func (s *Star) SpecifyEmphasized() *Star {
-	s.buffer.Write([]byte{0x1B, 0x45})
-	return s
-}
-
-func (s *Star) CancelEmphasized() *Star {
-	s.buffer.Write([]byte{0x1B, 0x46})
 	return s
 }
 
