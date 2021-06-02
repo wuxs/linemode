@@ -1,29 +1,60 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"github.com/jacobsa/go-serial/serial"
 	"github.com/wuxs/linemode/pkg/linemode"
+	"io"
+	"net"
+	"os"
 	"time"
 )
 
 func main() {
-	//s, _ := net.Dial("tcp", "192.168.1.2:9100")
+	connType := flag.String("t", "serial", "connect type: serial / tcp / file")
+	port := flag.String("p", "/dev/ttyS6", "serial port name or tcp address or file path")
+	flag.Parse()
 
-	options := serial.OpenOptions{
-		PortName:        "/dev/ttyS1",
-		BaudRate:        9600,
-		DataBits:        8,
-		StopBits:        1,
-		MinimumReadSize: 4,
+	var conn io.ReadWriteCloser
+	switch *connType {
+	case "serial":
+		options := serial.OpenOptions{
+			PortName:        *port,
+			BaudRate:        9600,
+			DataBits:        8,
+			StopBits:        1,
+			MinimumReadSize: 4,
+		}
+		s, err := serial.Open(options)
+		conn = s
+		if err != nil {
+			fmt.Println(err.Error())
+			return
+		}
+	case "tcp":
+		s, err := net.Dial("tcp", *port)
+		conn = s
+		if err != nil {
+			fmt.Println(err.Error())
+			return
+		}
+	case "file":
+		s, err := os.OpenFile(*port, os.O_CREATE|os.O_WRONLY, 644)
+		conn = s
+		if err != nil {
+			fmt.Println(err.Error())
+			return
+		}
+	default:
+		fmt.Println("unknown type")
+		return
 	}
-	s, err := serial.Open(options)
-	//s, _ := os.Create("test.txt")  // write to file
-	defer s.Close()
-	star := linemode.NewStar(s)
-	star.Reset().
-		SpecifyCodePage(linemode.Utf8).
-		SpecifyLineSpace(48).
+	defer conn.Close()
+	star := linemode.NewStar(conn)
+	star.Init().
+		//SpecifyCodePage(linemode.Utf8).
+		//SpecifyLineSpace(48).
 		SpecifyAlignment(linemode.Center).
 		SpecifyBold().
 		Print("车辆通行费\n").
@@ -40,7 +71,7 @@ func main() {
 		Print(fmt.Sprintf("    日期: " + time.Now().Format("2006-01-01 15:04") + "\n")).
 		FeedPaperLines(5).
 		CutFull()
-	_, err = star.Flush()
+	_, err := star.Flush()
 	if err != nil {
 		fmt.Println(err.Error())
 	}
